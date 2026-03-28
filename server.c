@@ -46,7 +46,6 @@ int main(int argc, char **argv)
 
 	while(1)
 	{
-		printf("waiting for client");
 		int clifd = accept(sockfd, NULL, NULL);
 		if(clifd < 0)
 		{
@@ -66,23 +65,42 @@ int main(int argc, char **argv)
 		{
 			strcpy(path, "/index.html");
 		}
+		char *extension = strrchr(path, '.');
+	    char *header;
+		if( extension != NULL)
+		{
+			if(strcmp(extension, ".html") == 0)
+			{
+			header = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
+			}
+
+			else if(strcmp(extension, ".jpg") == 0 || strcmp(extension, ".jpg") == 0)
+			{
+			header = "HTTP/1.1 200 OK\r\nContent-Type: text/jpeg\r\n\r\n";
+			}
+
+			else if(strcmp(extension, ".css") == 0)
+			{
+				header = "HTTP/1.1 200 OK\r\nContent-Type: text/css\r\n\r\n";
+			}
+
+			else
+			{
+				header = "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\n\r\n";
+			}
+		}
+
 		int file_fd = open(path + 1, O_RDONLY);
 		if(file_fd != -1 )
 		{
-			long fsize = lseek(file_fd, 0, SEEK_END);
-    		lseek(file_fd, 0, SEEK_SET);
-
-			char *fbuffer = malloc(fsize);
-
-			read(file_fd, fbuffer, fsize);
+			while( (n = read(file_fd, buf, sizeof(buf))) > 0)
+			{
+				write(clifd, buf, n);
+			}
 			close(file_fd);
-
-			char *header = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
+		
 			write(clifd, header, strlen(header));
 
-			write(clifd, fbuffer, fsize);
-
-			free(fbuffer);
 		}
 		else
 		{
