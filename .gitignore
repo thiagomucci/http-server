@@ -1,2 +1,5 @@
 server.bin
-index.html
+*.html
+*.css
+*.jpg
+*.jpeg
